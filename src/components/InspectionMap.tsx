@@ -31,7 +31,7 @@ const InspectionMap: React.FC<InspectionMapProps> = ({ address, borough }) => {
     const customIcon = L.divIcon({
       html: `
         <div style="
-          background-color: hsl(210 100% 48%);
+          background-color: hsl(0 86% 47%);
           width: 30px;
           height: 30px;
           border-radius: 50%;
@@ -61,7 +61,7 @@ const InspectionMap: React.FC<InspectionMapProps> = ({ address, borough }) => {
         <div style="font-family: system-ui, -apple-system, sans-serif;">
           <strong>${address}</strong><br>
           ${borough}<br>
-          <span style="color: #666; font-size: 12px;">Localização do Prédio</span>
+          <span style="color: #666; font-size: 12px;">Building Location</span>
         </div>
       `);
 

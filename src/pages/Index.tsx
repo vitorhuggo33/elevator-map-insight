@@ -67,8 +67,8 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <Building2 className="h-8 w-8" />
             <div>
-              <h1 className="text-2xl font-bold">Relatório de Inspeção Periódica</h1>
-              <p className="text-primary-foreground/80">Elevadores - Período 2025</p>
+              <h1 className="text-2xl font-bold">Periodic Inspection Report</h1>
+              <p className="text-primary-foreground/80">Elevators - Period 2025</p>
             </div>
           </div>
         </div>
@@ -80,7 +80,7 @@ const Index = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
-              Informações do Prédio
+              Building Information
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -93,11 +93,11 @@ const Index = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-sm font-medium text-muted-foreground">Bloco</span>
+                    <span className="text-sm font-medium text-muted-foreground">Block</span>
                     <p className="text-sm">{firstElevator.Block}</p>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-muted-foreground">Lote</span>
+                    <span className="text-sm font-medium text-muted-foreground">Lot</span>
                     <p className="text-sm">{firstElevator.Lot}</p>
                   </div>
                 </div>
@@ -107,7 +107,7 @@ const Index = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Data da Inspeção: {firstElevator['Periodic Inspection Date']}</span>
+                    <span className="text-sm">Inspection Date: {firstElevator['Periodic Inspection Date']}</span>
                   </div>
                 </div>
               </div>
@@ -127,24 +127,24 @@ const Index = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Resumo da Inspeção
+              Inspection Summary
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-primary">{totalElevators}</div>
-                <div className="text-sm text-muted-foreground">Total de Elevadores</div>
+                <div className="text-sm text-muted-foreground">Total Elevators</div>
               </div>
               
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-destructive">{elevatorWithDefects}</div>
-                <div className="text-sm text-muted-foreground">Com Defeitos</div>
+                <div className="text-sm text-muted-foreground">With Defects</div>
               </div>
               
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-success">{totalElevators - elevatorWithDefects}</div>
-                <div className="text-sm text-muted-foreground">Sem Defeitos</div>
+                <div className="text-sm text-muted-foreground">No Defects</div>
               </div>
             </div>
           </CardContent>
@@ -152,7 +152,7 @@ const Index = () => {
 
         {/* Lista de Elevadores */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold">Detalhes dos Elevadores</h2>
+          <h2 className="text-xl font-semibold">Elevator Details</h2>
           
           <div className="space-y-4">
             {inspectionData.map((elevator) => (

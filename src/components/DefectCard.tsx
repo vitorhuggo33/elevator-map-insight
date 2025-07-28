@@ -23,7 +23,7 @@ const DefectCard: React.FC<DefectCardProps> = ({ defects, hasDefects }) => {
         <CardContent className="p-4">
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-success" />
-            <span className="text-success font-medium">Nenhum defeito encontrado</span>
+            <span className="text-success font-medium">No defects found</span>
           </div>
         </CardContent>
       </Card>
@@ -37,36 +37,36 @@ const DefectCard: React.FC<DefectCardProps> = ({ defects, hasDefects }) => {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <AlertTriangle className="h-4 w-4 text-destructive" />
-              Defeito Identificado
+              Defect Identified
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-2">
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Parte do Elevador:</span>
+                <span className="text-sm font-medium text-muted-foreground">Elevator Part:</span>
                 <p className="text-sm">{defect['Elevator Part']}</p>
               </div>
               
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Subparte:</span>
+                <span className="text-sm font-medium text-muted-foreground">Subpart:</span>
                 <p className="text-sm">{defect['Elevator Subpart']}</p>
               </div>
               
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Condição Violada:</span>
+                <span className="text-sm font-medium text-muted-foreground">Violating Condition:</span>
                 <Badge variant="destructive" className="text-xs">
                   {defect['Violating Condition']}
                 </Badge>
               </div>
               
               <div>
-                <span className="text-sm font-medium text-muted-foreground">Solução Sugerida:</span>
+                <span className="text-sm font-medium text-muted-foreground">Suggested Remedy:</span>
                 <p className="text-sm">{defect['Suggested Remedy']}</p>
               </div>
               
               {defect['Comments'] && (
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Comentários:</span>
+                  <span className="text-sm font-medium text-muted-foreground">Comments:</span>
                   <p className="text-sm italic">{defect['Comments']}</p>
                 </div>
               )}
