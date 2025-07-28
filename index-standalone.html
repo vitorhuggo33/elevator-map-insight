@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elevator Map Insight</title>
+    <meta name="description" content="Periodic Inspection Report - Elevators">
+    
+    <!-- External Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        /* Tailwind CSS Reset and Base Styles */
+        *, ::before, ::after {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb;
+        }
+        
+        html {
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+            -moz-tab-size: 4;
+            tab-size: 4;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            line-height: inherit;
+        }
+        
+        /* Design System - CSS Variables */
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 0 86% 47%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 43 100% 52%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --success: 120 65% 45%;
+            --success-foreground: 0 0% 100%;
+            --warning: 43 100% 52%;
+            --warning-foreground: 222.2 47.4% 11.2%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            .dark {
+                --background: 222.2 84% 4.9%;
+                --foreground: 210 40% 98%;
+                --card: 222.2 84% 4.9%;
+                --card-foreground: 210 40% 98%;
+                --popover: 222.2 84% 4.9%;
+                --popover-foreground: 210 40% 98%;
+                --primary: 210 40% 98%;
+                --primary-foreground: 222.2 47.4% 11.2%;
+                --secondary: 217.2 32.6% 17.5%;
+                --secondary-foreground: 210 40% 98%;
+                --muted: 217.2 32.6% 17.5%;
+                --muted-foreground: 215 20.2% 65.1%;
+                --accent: 43 100% 52%;
+                --accent-foreground: 222.2 47.4% 11.2%;
+                --destructive: 0 62.8% 30.6%;
+                --destructive-foreground: 210 40% 98%;
+                --success: 120 65% 45%;
+                --success-foreground: 0 0% 100%;
+                --warning: 43 100% 52%;
+                --warning-foreground: 222.2 47.4% 11.2%;
+                --border: 217.2 32.6% 17.5%;
+                --input: 217.2 32.6% 17.5%;
+                --ring: 212.7 26.8% 83.9%;
+            }
+        }
+        
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        
+        /* Utility Classes */
+        .min-h-screen { min-height: 100vh; }
+        .bg-background { background-color: hsl(var(--background)); }
+        .bg-primary { background-color: hsl(var(--primary)); }
+        .text-primary { color: hsl(var(--primary)); }
+        .text-primary-foreground { color: hsl(var(--primary-foreground)); }
+        .text-foreground { color: hsl(var(--foreground)); }
+        .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+        .text-destructive { color: hsl(var(--destructive)); }
+        .text-success { color: hsl(var(--success)); }
+        .text-destructive-foreground { color: hsl(var(--destructive-foreground)); }
+        .text-success-foreground { color: hsl(var(--success-foreground)); }
+        .bg-destructive { background-color: hsl(var(--destructive)); }
+        .bg-success { background-color: hsl(var(--success)); }
+        .bg-destructive\/5 { background-color: hsl(var(--destructive) / 0.05); }
+        .bg-success\/5 { background-color: hsl(var(--success) / 0.05); }
+        .border-destructive { border-color: hsl(var(--destructive)); }
+        .border-success { border-color: hsl(var(--success)); }
+        .border { border-width: 1px; border-color: hsl(var(--border)); }
+        .border-border { border-color: hsl(var(--border)); }
+        
+        .container { width: 100%; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+        @media (min-width: 640px) { .container { max-width: 640px; } }
+        @media (min-width: 768px) { .container { max-width: 768px; } }
+        @media (min-width: 1024px) { .container { max-width: 1024px; } }
+        @media (min-width: 1280px) { .container { max-width: 1280px; } }
+        
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .p-4 { padding: 1rem; }
+        .pb-2 { padding-bottom: 0.5rem; }
+        .pl-6 { padding-left: 1.5rem; }
+        
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        
+        @media (min-width: 768px) {
+            .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .md\\:h-80 { height: 20rem; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .space-y-8 > * + * { margin-top: 2rem; }
+        
+        .h-4 { height: 1rem; }
+        .h-5 { height: 1.25rem; }
+        .h-8 { height: 2rem; }
+        .h-64 { height: 16rem; }
+        .h-full { height: 100%; }
+        .w-4 { width: 1rem; }
+        .w-5 { width: 1.25rem; }
+        .w-8 { width: 2rem; }
+        .w-full { width: 100%; }
+        
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        
+        .text-center { text-align: center; }
+        .italic { font-style: italic; }
+        
+        .rounded-lg { border-radius: 0.5rem; }
+        .overflow-hidden { overflow: hidden; }
+        .relative { position: relative; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        
+        /* Card Styles */
+        .card {
+            border-radius: calc(var(--radius) - 2px);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            flex-direction: column;
+            space-y: 1.5;
+            padding: 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+            padding-top: 0;
+        }
+        
+        /* Badge Styles */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.125rem 0.75rem;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: 600;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+        
+        .badge-default {
+            border: 1px solid transparent;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+        
+        .badge-destructive {
+            border: 1px solid transparent;
+            background-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+        
+        .badge-success {
+            border: 1px solid transparent;
+            background-color: hsl(var(--success));
+            color: hsl(var(--success-foreground));
+        }
+        
+        /* Separator */
+        .separator {
+            flex-shrink: 0;
+            background-color: hsl(var(--border));
+            height: 1px;
+            width: 100%;
+        }
+        
+        /* Map specific styles */
+        .leaflet-container {
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* Primary color adjustments for better contrast */
+        .text-primary\/80 {
+            color: hsl(var(--primary) / 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        // Inspection data
+        const inspectionData = [
+            {
+                "DeviceID": "1P45336",
+                "DeviceType": "Elevator",
+                "Premises": "515 WEST 185 STREET",
+                "Borough": "MANHATTAN",
+                "Block": "2156",
+                "Lot": "61",
+                "Approved Date": "",
+                "Status Date": "",
+                "Floor From": "B",
+                "Floor To": "6",
+                "Periodic Inspection File Name": "",
+                "Periodic Inspection Date": "07/17/2025",
+                "Defect Exist?": "Yes",
+                "Defects": [
+                    [
+                        {
+                            "Elevator Part": "Machine Brake",
+                            "Elevator Subpart": "59",
+                            "Violating Condition": "B - Insufficient",
+                            "Suggested Remedy": "07 - Provide",
+                            "Comments": "59 update brake maintenance tag"
+                        }
+                    ]
+                ]
+            },
+            {
+                "DeviceID": "1P45337",
+                "DeviceType": "Elevator",
+                "Premises": "515 WEST 185 STREET",
+                "Borough": "MANHATTAN",
+                "Block": "2156",
+                "Lot": "61",
+                "Approved Date": "",
+                "Status Date": "",
+                "Floor From": "B",
+                "Floor To": "6",
+                "Periodic Inspection File Name": "",
+                "Periodic Inspection Date": "07/17/2025",
+                "Defect Exist?": "No",
+                "Defects": [
+                    []
+                ]
+            }
+        ];
+
+        // Icon components
+        const Building2 = () => React.createElement(lucide.Building2, { className: "h-8 w-8" });
+        const MapPin = ({ className }) => React.createElement(lucide.MapPin, { className });
+        const Calendar = ({ className }) => React.createElement(lucide.Calendar, { className });
+        const FileText = ({ className }) => React.createElement(lucide.FileText, { className });
+        const Building = ({ className }) => React.createElement(lucide.Building, { className });
+        const Hash = ({ className }) => React.createElement(lucide.Hash, { className });
+        const AlertTriangle = ({ className }) => React.createElement(lucide.AlertTriangle, { className });
+        const CheckCircle = ({ className }) => React.createElement(lucide.CheckCircle, { className });
+
+        // Card Components
+        const Card = ({ children, className = "" }) => (
+            <div className={`card ${className}`}>
+                {children}
+            </div>
+        );
+
+        const CardHeader = ({ children, className = "" }) => (
+            <div className={`card-header ${className}`}>
+                {children}
+            </div>
+        );
+
+        const CardTitle = ({ children, className = "" }) => (
+            <h3 className={`card-title ${className}`}>
+                {children}
+            </h3>
+        );
+
+        const CardContent = ({ children, className = "" }) => (
+            <div className={`card-content ${className}`}>
+                {children}
+            </div>
+        );
+
+        // Badge Component
+        const Badge = ({ children, variant = "default", className = "" }) => {
+            const variantClasses = {
+                default: "badge-default",
+                destructive: "badge-destructive",
+                success: "badge-success"
+            };
+            
+            return (
+                <span className={`badge ${variantClasses[variant]} ${className}`}>
+                    {children}
+                </span>
+            );
+        };
+
+        // Separator Component
+        const Separator = ({ className = "" }) => (
+            <div className={`separator ${className}`} />
+        );
+
+        // DefectCard Component
+        const DefectCard = ({ defects, hasDefects }) => {
+            if (!hasDefects || defects.length === 0) {
+                return (
+                    <Card className="border-success bg-success/5">
+                        <CardContent className="p-4">
+                            <div className="flex items-center gap-2">
+                                <CheckCircle className="h-5 w-5 text-success" />
+                                <span className="text-success font-medium">No defects found</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                );
+            }
+
+            return (
+                <div className="space-y-3">
+                    {defects.map((defect, index) => (
+                        <Card key={index} className="border-destructive bg-destructive/5">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                                    Defect Identified
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div className="grid gap-2">
+                                    <div>
+                                        <span className="text-sm font-medium text-muted-foreground">Elevator Part:</span>
+                                        <p className="text-sm">{defect['Elevator Part']}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <span className="text-sm font-medium text-muted-foreground">Subpart:</span>
+                                        <p className="text-sm">{defect['Elevator Subpart']}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <span className="text-sm font-medium text-muted-foreground">Violating Condition:</span>
+                                        <Badge variant="destructive" className="text-xs">
+                                            {defect['Violating Condition']}
+                                        </Badge>
+                                    </div>
+                                    
+                                    <div>
+                                        <span className="text-sm font-medium text-muted-foreground">Suggested Remedy:</span>
+                                        <p className="text-sm">{defect['Suggested Remedy']}</p>
+                                    </div>
+                                    
+                                    {defect['Comments'] && (
+                                        <div>
+                                            <span className="text-sm font-medium text-muted-foreground">Comments:</span>
+                                            <p className="text-sm italic">{defect['Comments']}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            );
+        };
+
+        // ElevatorCard Component
+        const ElevatorCard = ({ elevator }) => {
+            const hasDefects = elevator['Defect Exist?'] === 'Yes';
+            const allDefects = elevator.Defects.flat();
+
+            return (
+                <Card className="w-full">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <Building className="h-5 w-5 text-primary" />
+                                Elevator {elevator.DeviceID}
+                            </CardTitle>
+                            <Badge 
+                                variant={hasDefects ? "destructive" : "success"}
+                            >
+                                {hasDefects ? 'With Defects' : 'No Defects'}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm font-medium">Location</span>
+                                </div>
+                                <p className="text-sm pl-6">{elevator.Premises}</p>
+                                <p className="text-sm pl-6 text-muted-foreground">{elevator.Borough}</p>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <Hash className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm font-medium">Identification</span>
+                                </div>
+                                <p className="text-sm pl-6">Block: {elevator.Block}</p>
+                                <p className="text-sm pl-6">Lot: {elevator.Lot}</p>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <span className="text-sm font-medium text-muted-foreground">Floors</span>
+                                <p className="text-sm">{elevator['Floor From']} - {elevator['Floor To']}</p>
+                            </div>
+                            
+                            <div>
+                                <span className="text-sm font-medium text-muted-foreground">Type</span>
+                                <p className="text-sm">{elevator.DeviceType}</p>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                    <span className="text-sm font-medium text-muted-foreground">Inspection</span>
+                                    <p className="text-sm">{elevator['Periodic Inspection Date']}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                            <h4 className="text-sm font-medium mb-3">Inspection Status</h4>
+                            <DefectCard defects={allDefects} hasDefects={hasDefects} />
+                        </div>
+                    </CardContent>
+                </Card>
+            );
+        };
+
+        // InspectionMap Component
+        const InspectionMap = ({ address, borough }) => {
+            const mapContainer = useRef(null);
+            const map = useRef(null);
+
+            useEffect(() => {
+                if (!mapContainer.current || map.current) return;
+
+                map.current = L.map(mapContainer.current, {
+                    center: [40.8518, -73.9343],
+                    zoom: 15,
+                    zoomControl: true,
+                });
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19,
+                }).addTo(map.current);
+
+                const customIcon = L.divIcon({
+                    html: `
+                        <div style="
+                            background-color: hsl(0 86% 47%);
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50%;
+                            border: 3px solid white;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <div style="
+                                width: 12px;
+                                height: 12px;
+                                background-color: white;
+                                border-radius: 50%;
+                            "></div>
+                        </div>
+                    `,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    className: 'custom-marker',
+                });
+
+                const marker = L.marker([40.8518, -73.9343], { icon: customIcon })
+                    .addTo(map.current)
+                    .bindPopup(`
+                        <div style="font-family: system-ui, -apple-system, sans-serif;">
+                            <strong>${address}</strong><br>
+                            ${borough}<br>
+                            <span style="color: #666; font-size: 12px;">Building Location</span>
+                        </div>
+                    `);
+
+                marker.openPopup();
+
+                return () => {
+                    if (map.current) {
+                        map.current.remove();
+                        map.current = null;
+                    }
+                };
+            }, [address, borough]);
+
+            return (
+                <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg border border-border">
+                    <div ref={mapContainer} className="w-full h-full" />
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const firstElevator = inspectionData[0];
+            const elevatorWithDefects = inspectionData.filter(e => e["Defect Exist?"] === "Yes").length;
+            const totalElevators = inspectionData.length;
+
+            return (
+                <div className="min-h-screen bg-background">
+                    {/* Header */}
+                    <div className="bg-primary text-primary-foreground">
+                        <div className="container mx-auto px-4 py-6">
+                            <div className="flex items-center gap-3">
+                                <Building2 />
+                                <div>
+                                    <h1 className="text-2xl font-bold">Periodic Inspection Report</h1>
+                                    <p className="text-primary-foreground/80">Elevators - Period 2025</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="container mx-auto px-4 py-8 space-y-8">
+                        {/* Building Information */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <MapPin className="h-5 w-5 text-primary" />
+                                    Building Information
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h3 className="font-semibold text-lg">{firstElevator.Premises}</h3>
+                                            <p className="text-muted-foreground">{firstElevator.Borough}</p>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <span className="text-sm font-medium text-muted-foreground">Block</span>
+                                                <p className="text-sm">{firstElevator.Block}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm font-medium text-muted-foreground">Lot</span>
+                                                <p className="text-sm">{firstElevator.Lot}</p>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                <span className="text-sm">Inspection Date: {firstElevator['Periodic Inspection Date']}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <InspectionMap 
+                                            address={firstElevator.Premises} 
+                                            borough={firstElevator.Borough} 
+                                        />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Inspection Summary */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-primary" />
+                                    Inspection Summary
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="text-center p-4 border rounded-lg">
+                                        <div className="text-2xl font-bold text-primary">{totalElevators}</div>
+                                        <div className="text-sm text-muted-foreground">Total Elevators</div>
+                                    </div>
+                                    
+                                    <div className="text-center p-4 border rounded-lg">
+                                        <div className="text-2xl font-bold text-destructive">{elevatorWithDefects}</div>
+                                        <div className="text-sm text-muted-foreground">With Defects</div>
+                                    </div>
+                                    
+                                    <div className="text-center p-4 border rounded-lg">
+                                        <div className="text-2xl font-bold text-success">{totalElevators - elevatorWithDefects}</div>
+                                        <div className="text-sm text-muted-foreground">No Defects</div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Elevator List */}
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-semibold">Elevator Details</h2>
+                            
+                            <div className="space-y-4">
+                                {inspectionData.map((elevator) => (
+                                    <ElevatorCard key={elevator.DeviceID} elevator={elevator} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
